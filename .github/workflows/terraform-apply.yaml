@@ -4,9 +4,10 @@ on:
   pull_request:
     types:
       - opened
+      - synchronize
+      - reopened
     branches:
-      - "eks-*"
-
+      - "eks-upgrade"
 env:
   AWS_REGION: us-east-1
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
