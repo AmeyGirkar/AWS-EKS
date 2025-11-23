@@ -46,9 +46,8 @@ jobs:
             ${{ runner.os }}-terraform-
       - name: chnage dir
         run: |
-          pwd
           ls
-          
+
       - name: Terraform Init
         run: terraform init
 
