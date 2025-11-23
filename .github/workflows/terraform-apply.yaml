@@ -59,4 +59,25 @@ jobs:
       # ---- PLAN ----
       - name: Terraform Plan
         if: github.event_name == 'pull_request' || github.event_name == 'push'
-        run: terraform plan
+        run: |
+          terraform plan -input=false -no-color -out=plan.tfplan | tee plan.txt
+
+      - name: Terraform Plan Summary
+        id: plan_summary
+        if: github.event_name == 'pull_request' || github.event_name == 'push'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+          terraform show -json plan.tfplan > plan.json
+          adds=$(jq '[.resource_changes[]? | select(.change.actions[]? == "create")] | length' plan.json)
+          updates=$(jq '[.resource_changes[]? | select(.change.actions[]? == "update")] | length' plan.json)
+          deletes=$(jq '[.resource_changes[]? | select(.change.actions[]? == "delete")] | length' plan.json)
+          summary="Plan: ${adds} to add, ${updates} to change, ${deletes} to destroy."
+          echo "plan_summary=${summary}" >> $GITHUB_OUTPUT
+          # provide a short snippet of the plan text for quick inspection
+          head -c 5000 plan.txt > plan_snippet.txt || true
+          echo "plan_snippet<<EOF" >> $GITHUB_OUTPUT
+          cat plan_snippet.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      
