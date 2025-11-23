@@ -1,0 +1,47 @@
+name: Terraform PR Plan
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  terraform:
+    name: Terraform Init and Plan
+    runs-on: ubuntu-latest
+    env:
+      TF_IN_AUTOMATION: "true"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (optional)
+        if: ${{ secrets.AWS_ACCESS_KEY_ID && secrets.AWS_SECRET_ACCESS_KEY }}
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Install prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip jq
+
+      - name: Install Terraform (latest)
+        run: |
+          set -e
+          terraform_version=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version')
+          echo "Installing Terraform version: $terraform_version"
+          curl -s -O "https://releases.hashicorp.com/terraform/${terraform_version}/terraform_${terraform_version}_linux_amd64.zip"
+          unzip -q "terraform_${terraform_version}_linux_amd64.zip"
+          mkdir -p "$HOME/bin"
+          mv terraform "$HOME/bin/"
+          echo "$HOME/bin" >> $GITHUB_PATH
+          terraform version
+
+      - name: Terraform init & plan (in `eks`)
+        working-directory: eks
+        run: |
+          set -e
+          terraform init -input=false
+          terraform plan -input=false -no-color -out=tfplan
