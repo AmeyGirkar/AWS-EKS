@@ -1,12 +1,9 @@
-name: 'Terraform-delete'
+name: 'Terraform apply'
 
 on:
-  workflow_dispatch:
-    inputs:
-      delete_Eks_cluster:
-        description: 'Delete EKS Cluster'
-        required: true
-        default: 'no'
+  push:
+    branches:
+      - main
 
 env:
   AWS_REGION: us-east-1
@@ -17,10 +14,8 @@ permissions:
   contents: read
 
 jobs:
-  terraform-delete:
-    name: Terraform Delete
+  terraform-plan:
     runs-on: ubuntu-latest
-    environment: production
 
     defaults:
       run:
@@ -50,9 +45,17 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform delete
-        run: terraform destroy -auto-approve
+      - name: Terraform Format Check
+        run: terraform fmt -check -diff
 
-      - name: Skip Destroy
+      - name: Terraform Validate
+        run: terraform validate
+
+      # ---- PLAN ----
+      - name: Terraform Plan
         run: |
-          echo "delete_Eks_cluster input is not 'yes' — skipping terraform destroy"
+          terraform plan 
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve  
+
