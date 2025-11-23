@@ -1,13 +1,9 @@
-name: 'Terraform Plan'
+name: 'Terraform apply'
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - eks-*
   push:
     branches:
-      - eks-*
+      - main
 
 env:
   AWS_REGION: us-east-1
