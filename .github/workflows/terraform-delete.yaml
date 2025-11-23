@@ -1,13 +1,12 @@
-name: 'Terraform Plan'
+name: 'Terraform-delete'
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - eks-*
-  push:
-    branches:
-      - eks-*
+  workflow_dispatch:
+    inputs:
+      delete_Eks_cluster:
+        description: 'Delete EKS Cluster'
+        required: true
+        default: 'no'
 
 env:
   AWS_REGION: us-east-1
@@ -18,11 +17,10 @@ permissions:
   contents: read
 
 jobs:
-  terraform-plan:
+  terraform-delete:
+    name: Terraform Delete
     runs-on: ubuntu-latest
     environment: production
-    # Only run if PR was actually merged (not just closed)
-    if: github.event.pull_request.merged == true
 
     defaults:
       run:
@@ -52,16 +50,11 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Format Check
-        run: terraform fmt -check -diff
+      - name: Terraform delete
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.delete_Eks_cluster == 'yes' }}
+        run: terraform destroy -auto-approve
 
-      - name: Terraform Validate
-        run: terraform validate
-
-      # ---- PLAN ----
-      - name: Terraform Plan
-        if: github.event_name == 'pull_request' || github.event_name == 'push'
+      - name: Skip Destroy
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.delete_Eks_cluster != 'yes' }}
         run: |
-          terraform plan 
-
-      
+          echo "delete_Eks_cluster input is not 'yes' — skipping terraform destroy"
