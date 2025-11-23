@@ -1,4 +1,4 @@
-name: 'terraform-plan'
+name: 'terraform-apply'
 
 on:
   pull_request:
@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 jobs:
-  terraform_plan:
+  terraform-apply:
     name: Terraform Plan
     runs-on: ubuntu-latest
     environment: production
