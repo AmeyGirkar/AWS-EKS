@@ -3,7 +3,8 @@ name: 'terraform-apply'
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: ["eks-upgrade"]
+    branches:
+      - eks-*
 
   workflow_dispatch:
     inputs:
