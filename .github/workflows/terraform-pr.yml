@@ -1,48 +1,61 @@
-name: Terraform PR Plan
+name: 'EKS-Terraform-Plan'
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
   push:
-    branches:
-      - eks-upgrade
+    branches: 
+      - '**'
+
+
+env: 
+  AWS_REGION: us-east-1
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+permissions:
+  contents: read
 
 jobs:
   terraform:
-    name: Terraform Init and Plan
+    name: Terraform Plan
     runs-on: ubuntu-latest
-    env:
-      TF_IN_AUTOMATION: "true"
+    environment: production
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: eks
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Configure AWS credentials (optional)
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with: 
+          terraform_version: 1.9.3
+          terraform_wrapper: true
+
+      - name: Cache Terraform
+        uses: actions/cache@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region:  "us-east-1"
-      - name: Install prerequisites
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y unzip jq
+          path: |
+            ~/.terraform.d/plugin-cache
+            .terraform
+          key: ${{ runner.os }}-terraform-${{ hashFiles('**/*.tf') }}
+          restore-keys: |
+            ${{ runner.os }}-terraform-
+      - name: Terraform Init
+        run: terraform init
 
-      - name: Install Terraform (latest)
-        run: |
-          set -e
-          terraform_version=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version')
-          echo "Installing Terraform version: $terraform_version"
-          curl -s -O "https://releases.hashicorp.com/terraform/${terraform_version}/terraform_${terraform_version}_linux_amd64.zip"
-          unzip -q "terraform_${terraform_version}_linux_amd64.zip"
-          mkdir -p "$HOME/bin"
-          mv terraform "$HOME/bin/"
-          echo "$HOME/bin" >> $GITHUB_PATH
-          terraform version
+      - name: Terraform Format Check
+        run: terraform fmt -check -diff
+        continue-on-error: false
 
-      - name: Terraform init & plan (in `eks`)
-        working-directory: eks
+      - name: Terraform Validate
+        run: terraform validate
+        continue-on-error: false
+
+      - name: Terraform plan
         run: |
-          set -e
-          terraform init -input=false
-          terraform plan -input=false -no-color -out=tfplan
+          terraform plan -var-file=dev.tfvars -input=false
+        continue-on-error: false
