@@ -1,10 +1,13 @@
-name: 'Terraform-apply'
+name: 'Terraform Plan'
 
 on:
   pull_request:
-    types: [closed]
+    types: [opened, synchronize, reopened]
     branches:
-      - main
+      - eks-*
+  push:
+    branches:
+      - eks-*
 
 env:
   AWS_REGION: us-east-1
@@ -15,8 +18,7 @@ permissions:
   contents: read
 
 jobs:
-  terraform-apply:
-    name: Terraform Plan
+  terraform-plan:
     runs-on: ubuntu-latest
     environment: production
     # Only run if PR was actually merged (not just closed)
@@ -56,8 +58,10 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
+      # ---- PLAN ----
       - name: Terraform Plan
-        run: terraform plan
+        if: github.event_name == 'pull_request' || github.event_name == 'push'
+        run: |
+          terraform plan 
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
+      

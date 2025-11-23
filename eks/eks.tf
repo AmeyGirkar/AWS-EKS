@@ -39,18 +39,3 @@ resource "aws_eks_cluster" "demo_eks" {
     bootstrap_cluster_creator_admin_permissions = true
   }
 }
-
-# resource "aws_eks_addon" "eks-addons" {
-#   for_each      = { for idx, addon in var.addons : idx => addon }
-#   cluster_name  = aws_eks_cluster.eks[0].name
-#   addon_name    = each.value.name
-#   addon_version = each.value.version
-
-#   depends_on = [
-#     aws_eks_node_group.ondemand-node,
-#     aws_eks_node_group.spot-node
-#   ]
-# }
-
-
-
