@@ -2,12 +2,20 @@ name: 'terraform-apply'
 
 on:
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
-    branches:
-      - "eks-upgrade"
+    types: [opened, synchronize, reopened]
+    branches: ["eks-upgrade"]
+
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Terraform action"
+        type: choice
+        required: true
+        options:
+          - plan
+          - apply
+          - destroy
+
 env:
   AWS_REGION: us-east-1
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -17,8 +25,7 @@ permissions:
   contents: read
 
 jobs:
-  terraform_plan:
-    name: Terraform ${{ github.event.inputs.action }}
+  terraform:
     runs-on: ubuntu-latest
     environment: production
 
@@ -37,7 +44,6 @@ jobs:
           terraform_version: 1.9.3
           terraform_wrapper: true
 
-      # Optional: Enable caching to speed up init
       - name: Cache Terraform
         uses: actions/cache@v4
         with:
@@ -57,17 +63,17 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
-      - name: Terraform Plan
-        if: ${{ github.event.inputs.action == 'plan' }}
-        run: |
-          terraform plan 
+      # ---- PLAN ----
+      - name: Terraform Plan (PR or manual)
+        if: github.event_name == 'pull_request' || github.event.inputs.action == 'plan'
+        run: terraform plan
 
-    #   - name: Terraform Apply
-    #     if: ${{ github.event.inputs.action == 'apply' }}
-    #     run: |
-    #       terraform apply -auto-approve -var-file=${{ github.event.inputs.tfvars_file }} -input=false
+      # # ---- APPLY ----
+      # - name: Terraform Apply
+      #   if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply'
+      #   run: terraform apply -auto-approve -input=false
 
-    #   - name: Terraform Destroy
-    #     if: ${{ github.event.inputs.action == 'destroy' }}
-    #     run: |
-    #       terraform destroy -auto-approve -var-file=${{ github.event.inputs.tfvars_file }} -input=false
+      # # ---- DESTROY ----
+      # - name: Terraform Destroy
+      #   if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
+      #   run: terraform destroy -auto-approve -input=false
