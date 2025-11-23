@@ -89,5 +89,5 @@ resource "aws_eks_addon" "addons" {
   addon_name   = each.key
   # set addon_version only when a non-empty version is provided; otherwise omit (null)
   addon_version = each.value.version != "" ? each.value.version : null
-  depends_on   = [aws_eks_cluster.demo_eks]
+  depends_on    = [aws_eks_cluster.demo_eks]
 }
