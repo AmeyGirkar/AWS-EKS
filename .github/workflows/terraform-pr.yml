@@ -44,6 +44,9 @@ jobs:
           key: ${{ runner.os }}-terraform-${{ hashFiles('**/*.tf') }}
           restore-keys: |
             ${{ runner.os }}-terraform-
+      - name: chnage dir
+        run: |
+          cd eks
       - name: Terraform Init
         run: terraform init
 
