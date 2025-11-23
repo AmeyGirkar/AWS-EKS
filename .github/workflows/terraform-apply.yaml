@@ -5,17 +5,9 @@ on:
     types: [opened, synchronize, reopened]
     branches:
       - eks-*
-
-  workflow_dispatch:
-    inputs:
-      action:
-        description: "Terraform action"
-        type: choice
-        required: true
-        options:
-          - plan
-          - apply
-          - destroy
+  push:
+    branches:
+      - eks-*
 
 env:
   AWS_REGION: us-east-1
@@ -65,16 +57,6 @@ jobs:
         run: terraform validate
 
       # ---- PLAN ----
-      - name: Terraform Plan (PR or manual)
-        if: github.event_name == 'pull_request' || github.event.inputs.action == 'plan'
+      - name: Terraform Plan
+        if: github.event_name == 'pull_request' || github.event_name == 'push'
         run: terraform plan
-
-      # # ---- APPLY ----
-      # - name: Terraform Apply
-      #   if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply'
-      #   run: terraform apply -auto-approve -input=false
-
-      # # ---- DESTROY ----
-      # - name: Terraform Destroy
-      #   if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
-      #   run: terraform destroy -auto-approve -input=false
