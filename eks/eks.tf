@@ -80,3 +80,14 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.demo.certificate_authority[0].data)
   token                  = data.aws_eks_cluster_auth.demo.token
 }
+
+# Install common EKS addons after the cluster is ready
+# These use the AWS EKS Addon API to manage core add-ons (no service account role specified).
+resource "aws_eks_addon" "addons" {
+  for_each     = local.eks_addons
+  cluster_name = aws_eks_cluster.demo_eks.name
+  addon_name   = each.key
+  # set addon_version only when a non-empty version is provided; otherwise omit (null)
+  addon_version = each.value.version != "" ? each.value.version : null
+  depends_on   = [aws_eks_cluster.demo_eks]
+}

@@ -39,3 +39,15 @@ data "aws_ssm_parameter" "node_ami" {
   name = "/aws/service/eks/optimized-ami/1.31/amazon-linux-2/recommended/image_id"
 }
 
+# List of EKS addon names to install on the cluster
+locals {
+  # Map of addon name -> object with optional `version` string.
+  # Leave `version` empty to install the provider/chosen default (latest compatible).
+  eks_addons = {
+    "vpc-cni"            = { version = "v1.20.0-eksbuild.1" }
+    "kube-proxy"         = { version = "v1.33.0-eksbuild.2" }
+    "coredns"            = { version = "1.12.2-eksbuild.4" }
+    "aws-ebs-csi-driver" = { version = "v1.46.0-eksbuild.1" }
+  }
+}
+
