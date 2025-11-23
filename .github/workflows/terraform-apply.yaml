@@ -1,9 +1,9 @@
 name: 'terraform-apply'
 
 on:
-  push:
-    branches:
-      - main
+ pull_request:
+  branches:
+    - eks-upgrade
 
 env:
   AWS_REGION: us-east-1
@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  terraform:
+  terraform_plan:
     name: Terraform ${{ github.event.inputs.action }}
     runs-on: ubuntu-latest
     environment: production
