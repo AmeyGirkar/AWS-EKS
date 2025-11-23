@@ -16,9 +16,7 @@ permissions:
 jobs:
   terraform-plan:
     runs-on: ubuntu-latest
-    environment: production
-    # Only run if PR was actually merged (not just closed)
-    if: github.event.pull_request.merged == true
+
 
     defaults:
       run:
