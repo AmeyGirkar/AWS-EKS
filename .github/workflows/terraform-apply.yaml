@@ -1,9 +1,11 @@
 name: 'terraform-apply'
 
 on:
- pull_request:
-  branches:
-    - eks-upgrade
+  pull_request:
+    types:
+      - opened
+    branches:
+      - "eks-*"
 
 env:
   AWS_REGION: us-east-1
