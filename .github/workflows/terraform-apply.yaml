@@ -1,7 +1,8 @@
-name: 'terraform-apply'
+name: 'terraform-plan'
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
       - main
 
@@ -14,10 +15,12 @@ permissions:
   contents: read
 
 jobs:
-  terraform:
-    name: Terraform ${{ github.event.inputs.action }}
+  terraform_plan:
+    name: Terraform Plan
     runs-on: ubuntu-latest
     environment: production
+    # Only run if PR was actually merged (not just closed)
+    if: github.event.pull_request.merged == true
 
     defaults:
       run:
@@ -34,7 +37,6 @@ jobs:
           terraform_version: 1.9.3
           terraform_wrapper: true
 
-      # Optional: Enable caching to speed up init
       - name: Cache Terraform
         uses: actions/cache@v4
         with:
@@ -55,16 +57,4 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        if: ${{ github.event.inputs.action == 'plan' }}
-        run: |
-          terraform plan 
-
-    #   - name: Terraform Apply
-    #     if: ${{ github.event.inputs.action == 'apply' }}
-    #     run: |
-    #       terraform apply -auto-approve -var-file=${{ github.event.inputs.tfvars_file }} -input=false
-
-    #   - name: Terraform Destroy
-    #     if: ${{ github.event.inputs.action == 'destroy' }}
-    #     run: |
-    #       terraform destroy -auto-approve -var-file=${{ github.event.inputs.tfvars_file }} -input=false
+        run: terraform plan
