@@ -4,6 +4,12 @@
 #
 ####################################################################
 
+variable "aws_region" {
+  type    = string
+  default = "us-east-1"
+}
+
+
 
 output "NodeInstanceRole" {
   value = aws_iam_role.node_instance_role.arn
