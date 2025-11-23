@@ -61,6 +61,6 @@ resource "kubernetes_config_map_v1" "aws_auth" {
   }
 
   depends_on = [
-    aws_eks_cluster.main
+    aws_eks_cluster.demo_eks
   ]
 }
