@@ -46,7 +46,7 @@ locals {
   eks_addons = {
     "vpc-cni"            = { version = "v1.20.0-eksbuild.1" }
     "kube-proxy"         = { version = "v1.33.0-eksbuild.2" }
-    "coredns"            = { version = "1.12.2-eksbuild.4" }
+    "coredns"            = { version = "v1.12.2-eksbuild.4" }
     "aws-ebs-csi-driver" = { version = "v1.46.0-eksbuild.1" }
   }
 }

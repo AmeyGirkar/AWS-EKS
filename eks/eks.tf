@@ -83,19 +83,11 @@ provider "kubernetes" {
 
 # Install common EKS addons after the cluster is ready
 # These use the AWS EKS Addon API to manage core add-ons (no service account role specified).
-# Create addons that have an explicit version pinned
-resource "aws_eks_addon" "addons_with_version" {
-  for_each      = { for k, v in local.eks_addons : k => v if v.version != "" }
-  cluster_name  = aws_eks_cluster.demo_eks.name
-  addon_name    = each.key
-  addon_version = each.value.version
-  depends_on    = [aws_eks_cluster.demo_eks]
-}
-
-# Create addons that don't specify a version (provider will install default/latest)
-resource "aws_eks_addon" "addons_no_version" {
-  for_each     = { for k, v in local.eks_addons : k => v if v.version == "" }
+resource "aws_eks_addon" "addons" {
+  for_each     = local.eks_addons
   cluster_name = aws_eks_cluster.demo_eks.name
   addon_name   = each.key
-  depends_on   = [aws_eks_cluster.demo_eks]
+  # set addon_version only when a non-empty version is provided; otherwise omit (null)
+  addon_version = each.value.version != "" ? each.value.version : null
+  depends_on    = [aws_eks_cluster.demo_eks]
 }
