@@ -44,10 +44,6 @@ jobs:
           key: ${{ runner.os }}-terraform-${{ hashFiles('**/*.tf') }}
           restore-keys: |
             ${{ runner.os }}-terraform-
-      - name: chnage dir
-        run: |
-          ls
-
       - name: Terraform Init
         run: terraform init
 
@@ -55,11 +51,7 @@ jobs:
         run: terraform fmt -check -diff
         continue-on-error: false
 
-      - name: Terraform Validate
-        run: terraform validate
-        continue-on-error: false
-
       - name: Terraform plan
         run: |
-          terraform plan -var-file=dev.tfvars -input=false
+          terraform plan 
         continue-on-error: false
