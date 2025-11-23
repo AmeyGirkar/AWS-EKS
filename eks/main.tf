@@ -4,19 +4,6 @@
 #
 ####################################################################
 
-variable "aws_region" {
-  type    = string
-  default = "us-east-1"
-}
-
-provider "aws" {
-  region = var.aws_region
-  #   default_tags {
-  #     tags = {
-  #       "kubernetes.io/cluster/demo-eks" = "owned"
-  #     }
-  #   }
-}
 
 output "NodeInstanceRole" {
   value = aws_iam_role.node_instance_role.arn
