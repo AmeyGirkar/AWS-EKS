@@ -39,3 +39,28 @@ resource "aws_eks_cluster" "demo_eks" {
     bootstrap_cluster_creator_admin_permissions = true
   }
 }
+
+
+resource "kubernetes_config_map_v1" "aws_auth" {
+  metadata {
+    name      = "aws-auth"
+    namespace = "kube-system"
+  }
+
+  data = {
+    mapRoles = yamlencode([
+      {
+        rolearn  = aws_iam_role.node_instance_role.arn
+        username = "system:node:{{EC2PrivateDNSName}}"
+        groups = [
+          "system:bootstrappers",
+          "system:nodes"
+        ]
+      }
+    ])
+  }
+
+  depends_on = [
+    aws_eks_cluster.main
+  ]
+}
