@@ -1,4 +1,4 @@
-name: 'terraform-apply'
+name: 'Terraform Plan'
 
 on:
   pull_request:
