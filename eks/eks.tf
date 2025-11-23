@@ -64,3 +64,19 @@ resource "kubernetes_config_map_v1" "aws_auth" {
     aws_eks_cluster.demo_eks
   ]
 }
+
+# Data sources and provider configuration to talk to the EKS control plane
+# Use the cluster endpoint + IAM auth token instead of relying on a local kubeconfig
+data "aws_eks_cluster" "demo" {
+  name = aws_eks_cluster.demo_eks.name
+}
+
+data "aws_eks_cluster_auth" "demo" {
+  name = aws_eks_cluster.demo_eks.name
+}
+
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.demo.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.demo.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.demo.token
+}
