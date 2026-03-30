@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+      inputs:
+        message:
+          description: 'yes'
 
 env:
   AWS_REGION: us-east-1
